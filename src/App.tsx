@@ -12,32 +12,41 @@ interface Mystate {
   countLength: number
   // ミスタイピング数
   countMissTyping: number
-  // 開始時間
-  startTime: Date
-  // 経過時間
-  elapsedTime: number
   // 合計正解タイピング数
   countSuccessTyping: number
   // 入力文字
   nowTypingString: [string, string, string]
   // ゲーム開始フラグ
   gameStart: boolean
+  // 開始時間
+  startTime: Date
+  // 経過時間
+  elapsedTime: number
+  // 現在入力可能なタイピングパターンのnumber
+  truePatern: number
 }
 
 class App extends Component<Myprops, Mystate> {
-
   constructor(props: Myprops) {
     super(props)
     this.state = {
       question: typingData(),
       countLength: 0,
       countMissTyping: 0,
-      startTime: new Date(),
-      elapsedTime: 0,
       countSuccessTyping: 0,
       nowTypingString: ["", "", ""],
-      gameStart: false
+      gameStart: false,
+      startTime: new Date(),
+      elapsedTime: 0,
+      truePatern: 0
     }
+  }
+
+  // truePatern set
+  public setTruePatern = (trueNo: number) => {
+    this.setState({
+      truePatern: trueNo
+    })
   }
 
   // 経過時間取得
@@ -117,13 +126,36 @@ class App extends Component<Myprops, Mystate> {
     })
   }
 
-  // state. 全部初期化
+  // gameStartStop
+  public gameStartStop = () => {
+    let a: boolean = this.state.gameStart
+    if (a) {
+      a = false
+    } else {
+      a = true
+      this.setState({
+        question: typingData(),
+        countLength: 0,
+        countMissTyping: 0,
+        countSuccessTyping: 0,
+        startTime: new Date(),
+        elapsedTime: 0,
+        truePatern: 0,
+      })
+    }
+    this.setState({
+      gameStart: a
+    })
+  }
+
+  // state. 今の問題が終われば初期化
   public b = () => {
     this.state.question[0].forEach((value, index) => {
       if (this.state.question[3][index]) {
         if (this.state.question[0][index].length <= this.state.countLength) {
           this.resetCountLength()
           this.resetQuestion()
+          this.setTruePatern(0)
         }
       }
     })
@@ -146,6 +178,7 @@ class App extends Component<Myprops, Mystate> {
         if (this.state.question[0][index].charAt(this.state.countLength) == eventKey) {
           // 一つでも成功すればよい
           trueAnswer = true
+          this.setTruePatern(index)
         } else {
           // 成功しなかったものは、それ以降入力できない扱いにしたい
           questionAliveSave[index] = false
@@ -167,6 +200,10 @@ class App extends Component<Myprops, Mystate> {
     window.addEventListener("keydown", (event) => {
       this.a(event.key)
       this.nowTyping()
+      // console.log(event.key)
+      if (event.key == 'Escape' || event.key == ' ') {
+        this.gameStartStop()
+      }
     })
     setInterval(() => {
       this.getTimer()
@@ -177,34 +214,35 @@ class App extends Component<Myprops, Mystate> {
     return (
       <div>
         <div>
-          question:{this.state.question[2]}
+          もんだい:{this.state.gameStart ? this.state.question[2] : ""}
         </div>
         <div>
-          question:{this.state.question[1]}
+          よみ:{this.state.gameStart ? this.state.question[1] : ""}
         </div>
         <div>
-          入力可能パターン:{this.state.question[0].length}
+          あるふぁべっと:{this.state.gameStart ? this.state.question[0][this.state.truePatern] : ""}
         </div>
         <div>
-          今何文字目:{this.state.countLength}
+          入力可能パターン:{this.state.gameStart ? this.state.question[0].length : ""}
         </div>
         <div>
-          成功タイピング数:{this.state.countSuccessTyping}
+          今何文字目:{this.state.gameStart ? this.state.countLength : ""}
         </div>
         <div>
-          ミスタイピング数:{this.state.countMissTyping}
+          成功タイピング数:{this.state.gameStart ? this.state.countSuccessTyping : ""}
         </div>
         <div>
-          経過時間:{this.state.elapsedTime}
+          ミスタイピング数:{this.state.gameStart ? this.state.countMissTyping : ""}
         </div>
         <div>
-          キー/秒:{Math.round((this.state.countSuccessTyping / this.state.elapsedTime) * 1000) / 1000}
+          キー/秒:{this.state.gameStart ? Math.round((this.state.countSuccessTyping / this.state.elapsedTime) * 1000) / 1000 : ""}
         </div>
         <div>
-          {this.state.nowTypingString[0]}:{this.state.nowTypingString[1]}:{this.state.nowTypingString[2]}
+          経過時間:{this.state.gameStart ? this.state.elapsedTime : ""}
         </div>
         <div>
-          {this.state.question[3]}
+          <button onClick={this.gameStartStop}>{this.state.gameStart ? "STOP" : "START"}</button>
+          Escape or Space
         </div>
       </div>
     )
