@@ -59,10 +59,12 @@ class App extends Component<Myprops, Mystate> {
     })
   }
 
-  // state.question reset
+  // state.question & countLength reset
   public resetQuestion = () => {
     this.setState({
-      question: typingData()
+      question: typingData(),
+      // countLength: 0,
+      truePatern: 0
     })
   }
 
@@ -210,6 +212,13 @@ class App extends Component<Myprops, Mystate> {
     }, 60)
   }
 
+  public stringReturn = () => {
+    const ary = this.state.question[0][this.state.truePatern].split('')
+    ary.splice(this.state.countLength + 1, 0, "~")
+    ary.splice(this.state.countLength, 0, "~")
+    return ary
+  }
+
   public render = () => {
     return (
       <div>
@@ -220,7 +229,9 @@ class App extends Component<Myprops, Mystate> {
           よみ:{this.state.gameStart ? this.state.question[1] : ""}
         </div>
         <div>
-          あるふぁべっと:{this.state.gameStart ? this.state.question[0][this.state.truePatern] : ""}
+          あるふぁべっと:{this.state.gameStart ?
+            this.stringReturn()
+            : ""}
         </div>
         <div>
           入力可能パターン:{this.state.gameStart ? this.state.question[0].length : ""}
